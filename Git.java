@@ -113,6 +113,7 @@ public class Git {
         FileOutputStream fileOutputStream = new FileOutputStream(zipPath);
         ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
         ZipEntry zipEntry = new ZipEntry(pathToFile);
+        zipEntry.setTime(0);
         zipOutputStream.putNextEntry(zipEntry);
         // could cause problems with file sizes larger than 2 billion bits/bytes
         byte[] data = new byte[(int) file.length()];
