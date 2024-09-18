@@ -93,12 +93,4 @@ public class Git {
         }
         return string.toString();
     }
-
-    // Prints an array of bytes to the console
-    private static void printByteArray(byte[] array) {
-        for (byte b : array) {
-            System.out.print(b + ", ");
-        }
-        System.out.println();
-    }
 }
