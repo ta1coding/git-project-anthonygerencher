@@ -13,14 +13,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Git {
-
-    private static boolean compressData = false;
+    
+    private static boolean compressData = true;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        createBlob("test");
+        
     }
 
-    // Creates the requisite files and directories for a repository in this folder
+    /**
+     * Creates the requisite files and directories for a repository in this folder.
+     * 
+     * @throws IOException
+     */
     public static void initRepoHere() throws IOException {
         // Initiate requisite files
         File gitFolder = new File("git");
@@ -28,9 +32,8 @@ public class Git {
         File indexFile = new File("git/index");
 
         // Checks if repository has already been created
-        if (gitFolder.exists() && objectFolder.exists() && indexFile.exists()) {
+        if (repoExistsHere())
             System.out.println("Git Repository already exists");
-        }
 
         // Create requisite directories and files if they don't already exist
         else {
@@ -44,6 +47,16 @@ public class Git {
     }
 
     /**
+     * @return True if a repository exists at this directory
+     */
+    private static boolean repoExistsHere() {
+        File gitFolder = new File("git");
+        File objectFolder = new File("git/objects");
+        File indexFile = new File("git/index");
+        return gitFolder.exists() && objectFolder.exists() && indexFile.exists();
+    }
+
+    /**
      * Creates a BLOB of the file in the objects folder and updates the index to
      * reflect that new hash-filename pair. File will be zip-compressed before
      * backing up if zip compression is enabled.
@@ -53,10 +66,11 @@ public class Git {
      * @throws IOException
      */
     public static void createBlob(String pathToFile) throws NoSuchAlgorithmException, IOException {
-        // TODO - must handle critical edge cases with appropriate exceptions
         File file = new File(pathToFile);
         if (!file.exists())
             throw new FileNotFoundException();
+        if (!repoExistsHere())
+            throw new FileNotFoundException("No repository found at this directory.");
 
         // compresses the file first for that sweet sweet S+ super credit
         if (compressData) {
