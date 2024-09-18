@@ -1,12 +1,14 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Git {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        createBlobHere("git/index");
+        createBackup("test");
     }
 
     // Creates the requisite files and directories for a repository in this folder
@@ -36,6 +38,14 @@ public class Git {
     public static void createBlobHere(String pathToFile) throws NoSuchAlgorithmException, IOException {
         String hash = generateHash(pathToFile);
 
+    }
+
+    //copies the contents of the original file to the backup
+    private static void createBackup (String pathToFile) throws IOException, NoSuchAlgorithmException {
+        String hash = generateHash(pathToFile);
+        Path source = Path.of(pathToFile);
+        Path destination = Path.of("git", "objects", hash);
+        Files.copy(source, destination);
     }
 
     //Generates the hash for a file based on the data in the file
