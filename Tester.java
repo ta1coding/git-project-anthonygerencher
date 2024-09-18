@@ -76,7 +76,7 @@ public class Tester {
     }
 
     /**
-     * Unzips & decompresses a file compressed with the zip format
+     * Unzips & decompresses a file compressed with the zip format.
      * 
      * @param pathToFile - the file to be unzipped
      * @throws IOException
@@ -206,7 +206,7 @@ public class Tester {
     }
 
     /**
-     * Creates a blob & updates the index based on the file name and data
+     * Creates a blob & updates the index based on the file name and data.
      * 
      * @param fileName - the name of the file
      * @param fileData - the data in the file
@@ -246,7 +246,7 @@ public class Tester {
     }
 
     /**
-     * Removes the repository at this location
+     * Removes the repository at this location.
      */
     private static void removeRepository() {
         File gitFolder = new File("git");
@@ -296,7 +296,12 @@ public class Tester {
         return (int) (Math.random() * (high - low) + low);
     }
 
-    // Prints an array of bytes to the console
+
+    /**
+     * Prints an array of bytes to the console.
+     * 
+     * @param array - the array to be printed
+     */
     @SuppressWarnings("unused")
     private static void printByteArray(byte[] array) {
         for (byte b : array) {

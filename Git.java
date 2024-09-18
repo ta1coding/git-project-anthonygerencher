@@ -100,7 +100,7 @@ public class Git {
     }
 
     /**
-     * Zip compresses a file and stores under the same name it with the .zip suffix
+     * Zip compresses a file and stores under the same name it with the .zip suffix.
      * 
      * @param pathToFile - the file to be zipped
      * @throws IOException
@@ -122,7 +122,14 @@ public class Git {
         zipOutputStream.close();
     }
 
-    // Updates the index with the file name and hash
+    
+    /**
+     * Updates the index, storing the file name and corresponding hash together with proper formatting.
+     * 
+     * @param pathToFile - the path to the file
+     * @param hash - the hash of the file
+     * @throws IOException
+     */
     private static void updateIndex(String pathToFile, String hash) throws IOException {
         File index = new File("git/index");
         BufferedWriter writer = new BufferedWriter(new FileWriter(index, true));
@@ -133,7 +140,7 @@ public class Git {
 
     /**
      * Copies the contents of the original file to the backup in git/objects/ and
-     * names it based on the hash
+     * names it based on the hash.
      * 
      * @param pathToFile - the path to the file to be backed up
      * @param hash       - the hash of the file to be backed up
@@ -147,7 +154,7 @@ public class Git {
     }
 
     /**
-     * Generates the hash for a file based on the data in the file
+     * Generates the hash for a file based on the data in the file.
      * 
      * @param pathToFile - the path to the file
      * @return The SHA-1 hash of the file based on its byte content
@@ -185,7 +192,7 @@ public class Git {
     }
 
     /**
-     * Toggles data compression before backing up when creating a blob
+     * Toggles data compression before backing up when creating a blob.
      */
     public static void toggleDataCompression() {
         compressData = !compressData;
