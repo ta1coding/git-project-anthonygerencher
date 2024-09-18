@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
@@ -20,10 +22,29 @@ public class Tree {
             tree.createNewFile();
     }
 
-    //TODO add blobs to the tree
+   
+    /**
+     * Adds a file to the tree at this directory in blob form.
+     * 
+     * @param pathToFile - the file to be added to the tree
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     public static void addBlobToTree (String pathToFile) throws NoSuchAlgorithmException, IOException {
+        //ensures that the tree file exists before adding a blob
+        makeTreeFileHere();
+        
+        //ensures that the blob version of the file exists in objects
         Blob.createBlob(pathToFile);
 
+        //Addes the data to the tree file
+        File file = new File(pathToFile);
+        String index = getIndex();
+        String hash = getHashFromIndex(file.getName(), index);
+        BufferedWriter writer = new BufferedWriter(new FileWriter("tree", true));
+        writer.write("blob :  " + hash + " : " + file.getName());
+        writer.newLine();
+        writer.close();
     }
 
     /**
