@@ -14,10 +14,10 @@ import java.util.zip.ZipOutputStream;
 
 public class Git {
 
-    private static boolean compressData = true;
+    private static boolean compressData = false;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        zipCompressFile("test");
+        createBlob("test");
     }
 
     // Creates the requisite files and directories for a repository in this folder
@@ -43,16 +43,22 @@ public class Git {
         }
     }
 
-    //not yet working
-    // Creates a BLOB of the file in the objects folder and updates the index to
-    // reflect that new hash-filename pair
+    /**
+     * Creates a BLOB of the file in the objects folder and updates the index to
+     * reflect that new hash-filename pair. File will be zip-compressed before
+     * backing up if zip compression is enabled.
+     * 
+     * @param pathToFile - the file to backup as a blob
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     public static void createBlob(String pathToFile) throws NoSuchAlgorithmException, IOException {
         // TODO - must handle critical edge cases with appropriate exceptions
         File file = new File(pathToFile);
         if (!file.exists())
             throw new FileNotFoundException();
 
-        // should compress the file first for that sweet sweet S+ super credit
+        // compresses the file first for that sweet sweet S+ super credit
         if (compressData) {
             String zipPath = pathToFile + ".zip";
             zipCompressFile(pathToFile);
@@ -62,8 +68,11 @@ public class Git {
                 return;
             createBackup(zipPath, hash);
             updateIndex(pathToFile, hash);
+            Files.delete(Path.of(zipPath));
         }
 
+        // same as above without compression; creates the backup with the hash as its
+        // filename and updates the index to show this pair
         else {
             String hash = generateHash(pathToFile);
             File backup = new File("git/objects/" + hash);
@@ -74,11 +83,11 @@ public class Git {
             createBackup(pathToFile, hash);
             updateIndex(pathToFile, hash);
         }
-
     }
 
     /**
      * Zip compresses a file and stores under the same name it with the .zip suffix
+     * 
      * @param pathToFile - the file to be zipped
      * @throws IOException
      */
@@ -108,14 +117,29 @@ public class Git {
         writer.close();
     }
 
-    // copies the contents of the original file to the backup
+    /**
+     * Copies the contents of the original file to the backup in git/objects/ and
+     * names it based on the hash
+     * 
+     * @param pathToFile - the path to the file to be backed up
+     * @param hash       - the hash of the file to be backed up
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
     private static void createBackup(String pathToFile, String hash) throws IOException, NoSuchAlgorithmException {
         Path source = Path.of(pathToFile);
         Path destination = Path.of("git", "objects", hash);
         Files.copy(source, destination);
     }
 
-    // Generates the hash for a file based on the data in the file
+    /**
+     * Generates the hash for a file based on the data in the file
+     * 
+     * @param pathToFile - the path to the file
+     * @return The SHA-1 hash of the file based on its byte content
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     private static String generateHash(String pathToFile) throws NoSuchAlgorithmException, IOException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         File file = new File(pathToFile);
@@ -134,7 +158,10 @@ public class Git {
         return byteArrayToHexString(hash);
     }
 
-    // turns a byte array into a hexidecimal number stored in String form
+    /**
+     * @param array - the byte array to be converted
+     * @return the byte array as a hexidecimal number stored in String form
+     */
     private static String byteArrayToHexString(byte[] array) {
         StringBuilder string = new StringBuilder();
         for (byte b : array) {
@@ -143,7 +170,18 @@ public class Git {
         return string.toString();
     }
 
+    /**
+     * Toggles data compression before backing up when creating a blob
+     */
     public static void toggleDataCompression() {
         compressData = !compressData;
+    }
+
+    /**
+     * @return True if data compression before backing up is enabled for creating
+     *         blobs
+     */
+    public static boolean dataCompressionEnabled() {
+        return compressData;
     }
 }
