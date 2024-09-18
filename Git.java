@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Git {
     
-    private static boolean compressData = true;
+    private static boolean compressData = false;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         
