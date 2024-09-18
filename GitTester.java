@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.ZipInputStream;
 
-public class Tester {
+public class GitTester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         testInitRepo();
         testCreateBlob();
