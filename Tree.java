@@ -11,6 +11,10 @@ public class Tree {
 
     }
 
+    public static void removeFileFromTree () {
+
+    }
+
     /**
      * Creates a tree file here.
      * 
@@ -30,7 +34,7 @@ public class Tree {
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    public static void addBlobToTree (String pathToFile) throws NoSuchAlgorithmException, IOException {
+    public static void addFileToTree (String pathToFile) throws NoSuchAlgorithmException, IOException {
         //ensures that the tree file exists before adding a blob
         makeTreeFileHere();
         
