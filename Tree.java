@@ -37,10 +37,15 @@ public class Tree {
         //ensures that the blob version of the file exists in objects
         Blob.createBlob(pathToFile);
 
-        //Addes the data to the tree file
+        //retrieves the hash from the index
         File file = new File(pathToFile);
         String index = getIndex();
         String hash = getHashFromIndex(file.getName(), index);
+        String tree = getTree();
+        //if the blob is already in the tree, no need to continue
+        if (tree.contains(hash))
+            return;
+        //writes the data to the tree file
         BufferedWriter writer = new BufferedWriter(new FileWriter("tree", true));
         writer.write("blob :  " + hash + " : " + file.getName());
         writer.newLine();
@@ -69,5 +74,18 @@ public class Tree {
         int hashStartingIndex = index.indexOf(fileName) - 41;
         int hashEndingIndex = hashStartingIndex + 40;
         return index.substring(hashStartingIndex, hashEndingIndex);
+    }
+
+    /**
+     * @return The tree in String form
+     * @throws IOException
+     */
+    private static String getTree () throws IOException {
+        StringBuilder string = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader("tree"));
+        while (reader.ready())
+            string.append(reader.readLine());
+        reader.close();
+        return string.toString();
     }
 }
