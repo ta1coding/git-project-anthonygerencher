@@ -1,16 +1,23 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class Git {
-    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
 
+    private static boolean compressData = true;
+
+    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
+        zipCompressFile("test");
     }
 
     // Creates the requisite files and directories for a repository in this folder
@@ -36,21 +43,60 @@ public class Git {
         }
     }
 
+    //not yet working
     // Creates a BLOB of the file in the objects folder and updates the index to
     // reflect that new hash-filename pair
     public static void createBlob(String pathToFile) throws NoSuchAlgorithmException, IOException {
-        String hash = generateHash(pathToFile);
-        File backup = new File("git/objects/" + hash);
-        // if the backup already exists, no need to create a new one
-        if (backup.exists())
-            return;
+        // TODO - must handle critical edge cases with appropriate exceptions
+        File file = new File(pathToFile);
+        if (!file.exists())
+            throw new FileNotFoundException();
 
         // should compress the file first for that sweet sweet S+ super credit
+        if (compressData) {
+            String zipPath = pathToFile + ".zip";
+            zipCompressFile(pathToFile);
+            String hash = generateHash(zipPath);
+            File backup = new File("git/objects/" + hash);
+            if (backup.exists())
+                return;
+            createBackup(zipPath, hash);
+            updateIndex(pathToFile, hash);
+        }
 
-        createBackup(pathToFile, hash);
-        updateIndex(pathToFile, hash);
+        else {
+            String hash = generateHash(pathToFile);
+            File backup = new File("git/objects/" + hash);
+            // if the backup already exists, no need to create a new one
+            if (backup.exists())
+                return;
 
-        // must handle critical edge cases with appropriate exceptions
+            createBackup(pathToFile, hash);
+            updateIndex(pathToFile, hash);
+        }
+
+    }
+
+    /**
+     * Zip compresses a file and stores under the same name it with the .zip suffix
+     * @param pathToFile - the file to be zipped
+     * @throws IOException
+     */
+    private static void zipCompressFile(String pathToFile) throws IOException {
+        File file = new File(pathToFile);
+        String zipPath = pathToFile + ".zip";
+        Files.deleteIfExists(Path.of(zipPath));
+        FileInputStream fileInputStream = new FileInputStream(pathToFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(zipPath);
+        ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+        ZipEntry zipEntry = new ZipEntry(pathToFile);
+        zipOutputStream.putNextEntry(zipEntry);
+        // could cause problems with file sizes larger than 2 billion bits/bytes
+        byte[] data = new byte[(int) file.length()];
+        fileInputStream.read(data);
+        fileInputStream.close();
+        zipOutputStream.write(data);
+        zipOutputStream.close();
     }
 
     // Updates the index with the file name and hash
@@ -95,5 +141,9 @@ public class Git {
             string.append(String.format("%02X", b));
         }
         return string.toString();
+    }
+
+    public static void toggleDataCompression() {
+        compressData = !compressData;
     }
 }
