@@ -6,16 +6,30 @@ import java.security.NoSuchAlgorithmException;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        
+        testCreateBlob();
     }
 
-    //not yet working
+    // not yet working
     public static void testCreateBlob() throws IOException, NoSuchAlgorithmException {
-        //creates a file with a random name and a random amount of data
-        File file = new File(randomString(5));
+        String fileName = randomString(5);
+        String fileData = randomString(randomInt(0, 100));
+        generateTestBlob(fileName, fileData);
+
+    }
+
+    
+    /**
+     * Creates a blob & updates the index based on the file name and data
+     * @param fileName - the name of the file
+     * @param fileData - the data in the file
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    private static void generateTestBlob(String fileName, String fileData) throws IOException, NoSuchAlgorithmException {
+        File file = new File(fileName);
         file.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        writer.write(randomString(randomInt(0, 100)));
+        writer.write(fileData);
         writer.close();
         Git.createBlob(file.getPath());
     }
@@ -36,7 +50,7 @@ public class Tester {
             System.out.println("Init repo method failed");
     }
 
-    private static void removeRepository () {
+    private static void removeRepository() {
         File gitFolder = new File("git");
         removedirectory(gitFolder.getPath());
     }
@@ -78,13 +92,13 @@ public class Tester {
     private static char randomChar() {
         return (char) (int) (Math.random() * (122 - 97) + 97);
     }
-     
+
     /**
-     * @param low - the low value
+     * @param low  - the low value
      * @param high - the high value
      * @return a random int between low and high: inclusive, exclusive
      */
-    private static int randomInt (int low, int high) {
+    private static int randomInt(int low, int high) {
         return (int) (Math.random() * (high - low) + low);
     }
 }
