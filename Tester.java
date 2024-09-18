@@ -2,17 +2,59 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        testInitRepo();
-        testCreateBlob();
+        unzipFile("git/objects/7B848A82641D8C0A27A6118E6B47CFCF52156F15");
+        // testInitRepo();
+        // testCreateBlob();
+    }
+
+    // TODO test zip compression
+    public static void testZipCompression() throws NoSuchAlgorithmException, IOException {
+        // ensures data compression is enabled
+        if (!Git.dataCompressionEnabled())
+            Git.toggleDataCompression();
+
+        // creates a copy of the index
+        File index = new File("git/index");
+        Files.copy(Path.of("git", "index"), Path.of("git", "index_copy"));
+        File indexCopy = new File("git/index_copy");
+
+        // conducts the test
+        String fileName = randomString(5);
+        String fileData = randomString(randomInt(0, 100));
+        generateTestBlob(fileName, fileData);
+
+    }
+
+    /**
+     * Unzips & decompresses a file compressed with the zip format
+     * 
+     * @param pathToFile - the file to be unzipped
+     * @throws IOException
+     */
+    private static void unzipFile(String pathToFile) throws IOException {
+        String zipPath = pathToFile + ".zip";
+        Files.copy(Path.of(pathToFile), Path.of(zipPath));
+        FileInputStream fileInputStream = new FileInputStream(zipPath);
+        ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
+        zipInputStream.getNextEntry();
+        byte[] data = zipInputStream.readAllBytes();
+        zipInputStream.close();
+        FileOutputStream fileOutputStream = new FileOutputStream(pathToFile);
+        fileOutputStream.write(data);
+        fileOutputStream.close();
+        Files.delete(Path.of(zipPath));
     }
 
     /**
@@ -221,5 +263,13 @@ public class Tester {
      */
     private static int randomInt(int low, int high) {
         return (int) (Math.random() * (high - low) + low);
+    }
+
+    // Prints an array of bytes to the console
+    private static void printByteArray(byte[] array) {
+        for (byte b : array) {
+            System.out.print(b + ", ");
+        }
+        System.out.println();
     }
 }
