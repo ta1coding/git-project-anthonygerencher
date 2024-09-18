@@ -11,18 +11,29 @@ import java.security.NoSuchAlgorithmException;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+        testInitRepo();
         testCreateBlob();
     }
 
-
+    /**
+     * Tests whether the createBlob method works.
+     * Accomplishes this by running the method on a random file with random data.
+     * Then looks up the hash value for that data in the index.
+     * Checks if the data stored at the backup is the same as the original data.
+     * This only works if the backup is created properly and if the hash is
+     * stored in the index next to the original name.
+     * 
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
     public static void testCreateBlob() throws IOException, NoSuchAlgorithmException {
         for (int i = 0; i < 100; i++) {
-            //creates a copy of the index
+            // creates a copy of the index
             File index = new File("git/index");
             Files.copy(Path.of("git", "index"), Path.of("git", "index_copy"));
             File indexCopy = new File("git/index_copy");
 
-            //conducts the test
+            // conducts the test
             String fileName = randomString(5);
             String fileData = randomString(randomInt(0, 100));
             generateTestBlob(fileName, fileData);
@@ -31,7 +42,7 @@ public class Tester {
                 return;
             }
 
-            //cleans up
+            // cleans up
             String hash = getHashFromIndex(fileName, getIndex());
             File backupFile = new File("git/objects/" + hash);
             File original = new File(fileName);
@@ -43,6 +54,13 @@ public class Tester {
         System.out.println("createBlob method passed the test.");
     }
 
+    /**
+     * @param fileName - the name of the file
+     * @param fileData - the data in the file
+     * @return true if the blob referenced in the index contains the same data as
+     *         the original file
+     * @throws IOException
+     */
     private static boolean blobMatchesData(String fileName, String fileData) throws IOException {
         String index = getIndex();
 
@@ -63,7 +81,7 @@ public class Tester {
      * @return the index in string form
      * @throws IOException
      */
-    private static String getIndex () throws IOException {
+    private static String getIndex() throws IOException {
         StringBuilder string = new StringBuilder();
         BufferedReader reader = new BufferedReader(new FileReader("git/index"));
         while (reader.ready())
@@ -74,16 +92,21 @@ public class Tester {
 
     /**
      * @param fileName - the name of the file
-     * @param index - the index in string form
+     * @param index    - the index in string form
      * @return the relevant hash based on the filename
      */
-    private static String getHashFromIndex (String fileName, String index) {
+    private static String getHashFromIndex(String fileName, String index) {
         int hashStartingIndex = index.indexOf(fileName) - 41;
         int hashEndingIndex = hashStartingIndex + 40;
         return index.substring(hashStartingIndex, hashEndingIndex);
     }
 
-    private static boolean byteArraysAreTheSame (byte[] one, byte[] two) {
+    /**
+     * @param one - the first byte array
+     * @param two - the second byte array
+     * @return true if the byte arrays are identical
+     */
+    private static boolean byteArraysAreTheSame(byte[] one, byte[] two) {
         if (one.length != two.length)
             return false;
         for (int i = 0; i < one.length; i++) {
@@ -111,6 +134,15 @@ public class Tester {
         Git.createBlob(file.getPath());
     }
 
+    /**
+     * Tests if the initRepo method works.
+     * Creates many repositories and checks if they have the required folders and
+     * files.
+     * Deletes the repository afterwards.
+     * 
+     * @warning WILL ERASE THE CONTENTS OF GIT FOLDER, OBJECTS FOLDER, AND INDEX.
+     * @throws IOException
+     */
     public static void testInitRepo() throws IOException {
         boolean success = true;
         for (int i = 0; i < 100; i++) {
@@ -122,27 +154,39 @@ public class Tester {
             removeRepository();
         }
         if (success)
-            System.out.println("Init repo method functioned successfully");
+            System.out.println("Init repo method passed the test");
         else
-            System.out.println("Init repo method failed");
+            System.out.println("Init repo method failed the test");
+
+        Git.initRepoHere();
     }
 
+    /**
+     * Removes the repository at this location
+     */
     private static void removeRepository() {
         File gitFolder = new File("git");
-        removedirectory(gitFolder.getPath());
+        removeDirectory(gitFolder.getPath());
     }
 
-    private static void removedirectory(String directoryName) {
+    /**
+     * Deletes a directory and all files within it
+     * 
+     * @param directoryName - the directory to delete
+     */
+    private static void removeDirectory(String directoryName) {
         File directory = new File(directoryName);
         for (File file : directory.listFiles()) {
             if (file.isDirectory())
-                removedirectory(file.getPath());
+                removeDirectory(file.getPath());
             file.delete();
         }
         directory.delete();
     }
 
-    // Returns true if the requisite folders for the repository are present
+    /**
+     * @return true if the requisite folders for the repository are present
+     */
     private static boolean checkForRequisites() {
         File gitFolder = new File("git");
         File objectFolder = new File("git/objects");

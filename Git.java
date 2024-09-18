@@ -46,8 +46,11 @@ public class Git {
             return;
 
         // should compress the file first for that sweet sweet S+ super credit
+
         createBackup(pathToFile, hash);
         updateIndex(pathToFile, hash);
+
+        // must handle critical edge cases with appropriate exceptions
     }
 
     // Updates the index with the file name and hash
