@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class Git {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        updateIndex("test", generateHash("test"));
+
     }
 
     // Creates the requisite files and directories for a repository in this folder
@@ -36,16 +36,21 @@ public class Git {
         }
     }
 
-    // Not yet working
-    public static void createBlobHere(String pathToFile) throws NoSuchAlgorithmException, IOException {
+    // Creates a BLOB of the file in the objects folder and updates the index to
+    // reflect that new hash-filename pair
+    public static void createBlob(String pathToFile) throws NoSuchAlgorithmException, IOException {
         String hash = generateHash(pathToFile);
+        File backup = new File("git/objects/" + hash);
+        // if the backup already exists, no need to create a new one
+        if (backup.exists())
+            return;
 
         // should compress the file first for that sweet sweet S+ super credit
         createBackup(pathToFile, hash);
         updateIndex(pathToFile, hash);
     }
 
-    //Updates the index with the file name and hash
+    // Updates the index with the file name and hash
     private static void updateIndex(String pathToFile, String hash) throws IOException {
         File index = new File("git/index");
         BufferedWriter writer = new BufferedWriter(new FileWriter(index, true));
