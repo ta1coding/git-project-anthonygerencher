@@ -9,32 +9,70 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        unzipFile("git/objects/7B848A82641D8C0A27A6118E6B47CFCF52156F15");
-        // testInitRepo();
-        // testCreateBlob();
+        testInitRepo();
+        testCreateBlob();
+        testZipCompression();
     }
 
-    // TODO test zip compression
+    /**
+     * Tests if the zip compression is working when backing up files to blobs.
+     * Ensures that zip compression is enabled before conducting the test. Unzips
+     * the backed up file and ensures that the data mathches the original data. By
+     * default this method will only function if the data is stored & zipped
+     * properly in the blob, and if the index has the correct hash-file pair stored.
+     * Hence, by default it also tests if blobs are be created succesfully and if
+     * the
+     * index is functioning properly.
+     * 
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     public static void testZipCompression() throws NoSuchAlgorithmException, IOException {
+        // ensures that a repo exists to back up files to
+        if (!repoExistsHere()) {
+            System.out.println("Test cannot be completed as no repository exists at this directory.");
+            return;
+        }
+
         // ensures data compression is enabled
         if (!Git.dataCompressionEnabled())
             Git.toggleDataCompression();
 
-        // creates a copy of the index
-        File index = new File("git/index");
-        Files.copy(Path.of("git", "index"), Path.of("git", "index_copy"));
-        File indexCopy = new File("git/index_copy");
+        for (int i = 0; i < 100; i++) {
+            // creates a copy of the index
+            File index = new File("git/index");
+            Files.copy(Path.of("git", "index"), Path.of("git", "index_copy"));
+            File indexCopy = new File("git/index_copy");
 
-        // conducts the test
-        String fileName = randomString(5);
-        String fileData = randomString(randomInt(0, 100));
-        generateTestBlob(fileName, fileData);
+            // conducts the test
+            String fileName = randomString(5);
+            String fileData = randomString(randomInt(0, 100));
+            generateTestBlob(fileName, fileData);
 
+            String indexString = getIndex();
+            String hash = getHashFromIndex(fileName, indexString);
+
+            unzipFile("git/objects/" + hash);
+
+            if (!blobMatchesData(fileName, fileData)) {
+                System.out.println("Zip compression failed the test.");
+                return;
+            }
+
+            // cleans up
+            File backupFile = new File("git/objects/" + hash);
+            File original = new File(fileName);
+            backupFile.delete();
+            original.delete();
+            index.delete();
+            indexCopy.renameTo(index);
+        }
+
+        System.out.println("Zip compression passed the test.");
     }
 
     /**
@@ -63,12 +101,21 @@ public class Tester {
      * Then looks up the hash value for that data in the index.
      * Checks if the data stored at the backup is the same as the original data.
      * This only works if the backup is created properly and if the hash is
-     * stored in the index next to the original name.
+     * stored in the index next to the original name. Only tests for the successful
+     * creation of non-compressed blobs.
      * 
      * @throws IOException
      * @throws NoSuchAlgorithmException
      */
     public static void testCreateBlob() throws IOException, NoSuchAlgorithmException {
+        // ensures that a repo exists to back up files to
+        if (!repoExistsHere()) {
+            System.out.println("Test cannot be completed as no repository exists at this directory.");
+            return;
+        }
+
+        if (Git.dataCompressionEnabled())
+            Git.toggleDataCompression();
         for (int i = 0; i < 100; i++) {
             // creates a copy of the index
             File index = new File("git/index");
@@ -186,20 +233,15 @@ public class Tester {
      * @throws IOException
      */
     public static void testInitRepo() throws IOException {
-        boolean success = true;
         for (int i = 0; i < 100; i++) {
             Git.initRepoHere();
-            if (!checkForRequisites()) {
-                success = false;
-                break;
+            if (!repoExistsHere()) {
+                System.out.println("Init repo method failed the test");
+                return;
             }
             removeRepository();
         }
-        if (success)
-            System.out.println("Init repo method passed the test");
-        else
-            System.out.println("Init repo method failed the test");
-
+        System.out.println("Init repo method passed the test");
         Git.initRepoHere();
     }
 
@@ -224,17 +266,6 @@ public class Tester {
             file.delete();
         }
         directory.delete();
-    }
-
-    /**
-     * @return true if the requisite folders for the repository are present
-     */
-    private static boolean checkForRequisites() {
-        File gitFolder = new File("git");
-        File objectFolder = new File("git/objects");
-        File indexFile = new File("git/index");
-
-        return gitFolder.exists() && objectFolder.exists() && indexFile.exists();
     }
 
     /**
@@ -266,10 +297,21 @@ public class Tester {
     }
 
     // Prints an array of bytes to the console
+    @SuppressWarnings("unused")
     private static void printByteArray(byte[] array) {
         for (byte b : array) {
             System.out.print(b + ", ");
         }
         System.out.println();
+    }
+
+    /**
+     * @return True if a repository exists at this directory
+     */
+    private static boolean repoExistsHere() {
+        File gitFolder = new File("git");
+        File objectFolder = new File("git/objects");
+        File indexFile = new File("git/index");
+        return gitFolder.exists() && objectFolder.exists() && indexFile.exists();
     }
 }
