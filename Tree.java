@@ -15,8 +15,8 @@ public class Tree {
         // addFileToTree("test");
         // addFileToTree("test2");
         // addFileToTree("test3");
-        // removeFileFromTree("test");
-        // removeFileFromTree("test3");
+        removeFileFromTree("test");
+        removeFileFromTree("test3");
     }
 
     /**
