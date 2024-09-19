@@ -4,15 +4,42 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public class Tree {
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
+        addFileToTree("test");
+        addFileToTree("test2");
+        addFileToTree("test3");
+        // removeFileFromTree("test");
+        // removeFileFromTree("test3");
     }
 
-    public static void removeFileFromTree () {
-
+    /**
+     * Removes a file from the tree. Does not delete the file, removes the hash from
+     * the tree file.
+     * 
+     * @param fileName - file to be removed from the tree
+     * @throws IOException
+     */
+    public static void removeFileFromTree(String fileName) throws IOException {
+        Files.deleteIfExists(Path.of("tree_copy"));
+        Files.copy(Path.of("tree"), Path.of("tree_copy"));
+        BufferedReader reader = new BufferedReader(new FileReader("tree_copy"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("tree"));
+        while (reader.ready()) {
+            String line = reader.readLine();
+            if (!Objects.equals(line.substring(line.length() - fileName.length()), fileName)) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+        reader.close();
+        writer.close();
+        Files.delete(Path.of("tree_copy"));
     }
 
     /**
@@ -26,7 +53,6 @@ public class Tree {
             tree.createNewFile();
     }
 
-   
     /**
      * Adds a file to the tree at this directory in blob form.
      * 
@@ -34,22 +60,22 @@ public class Tree {
      * @throws NoSuchAlgorithmException
      * @throws IOException
      */
-    public static void addFileToTree (String pathToFile) throws NoSuchAlgorithmException, IOException {
-        //ensures that the tree file exists before adding a blob
+    public static void addFileToTree(String pathToFile) throws NoSuchAlgorithmException, IOException {
+        // ensures that the tree file exists before adding a blob
         makeTreeFileHere();
-        
-        //ensures that the blob version of the file exists in objects
+
+        // ensures that the blob version of the file exists in objects
         Blob.createBlob(pathToFile);
 
-        //retrieves the hash from the index
+        // retrieves the hash from the index
         File file = new File(pathToFile);
         String index = getIndex();
         String hash = getHashFromIndex(file.getName(), index);
         String tree = getTree();
-        //if the blob is already in the tree, no need to continue
+        // if the blob is already in the tree, no need to continue
         if (tree.contains(hash))
             return;
-        //writes the data to the tree file
+        // writes the data to the tree file
         BufferedWriter writer = new BufferedWriter(new FileWriter("tree", true));
         writer.write("blob :  " + hash + " : " + file.getName());
         writer.newLine();
@@ -84,7 +110,7 @@ public class Tree {
      * @return The tree in String form
      * @throws IOException
      */
-    private static String getTree () throws IOException {
+    private static String getTree() throws IOException {
         StringBuilder string = new StringBuilder();
         BufferedReader reader = new BufferedReader(new FileReader("tree"));
         while (reader.ready())
