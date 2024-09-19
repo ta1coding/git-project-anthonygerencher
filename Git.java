@@ -79,8 +79,7 @@ public class Git {
             String hash = generateHash(zipPath);
             File backup = new File("git/objects/" + hash);
             if (backup.exists())
-                return;
-            createBackup(zipPath, hash);
+                createBackup(zipPath, hash);
             updateIndex(pathToFile, hash);
             Files.delete(Path.of(zipPath));
         }
@@ -91,10 +90,8 @@ public class Git {
             String hash = generateHash(pathToFile);
             File backup = new File("git/objects/" + hash);
             // if the backup already exists, no need to create a new one
-            if (backup.exists())
-                return;
-
-            createBackup(pathToFile, hash);
+            if (!backup.exists())
+                createBackup(pathToFile, hash);
             updateIndex(pathToFile, hash);
         }
     }
