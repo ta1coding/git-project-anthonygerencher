@@ -104,7 +104,7 @@ public class Git {
     private static boolean indexContainsFile(String pathToFile) throws IOException {
         File file = new File(pathToFile);
         String fileName = file.getName();
-        BufferedReader reader = new BufferedReader(new FileReader("index"));
+        BufferedReader reader = new BufferedReader(new FileReader("git/index"));
         while (reader.ready()) {
             String line = reader.readLine();
             if (Objects.equals(line.substring(line.length() - fileName.length()), fileName)) {
