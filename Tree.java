@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,8 +27,21 @@ public class Tree {
      * @throws IOException
      */
     public static void removeFileFromTree(String fileName) throws IOException {
-        Files.deleteIfExists(Path.of("tree_copy"));
+        File file = new File(fileName);
+        File tree = new File("tree");
+
+        // throws an exception if the file attempting to be removed doesn't exist or if
+        // the tree itself doesn't exist
+        if (!file.exists())
+            throw new FileNotFoundException();
+        if (!tree.exists())
+            throw new FileNotFoundException("Cannot remove file because tree doesn't exist.");
+
+        // makes a copy of the tree
         Files.copy(Path.of("tree"), Path.of("tree_copy"));
+
+        // goes through the tree and doesn't write any lines that contain the file to be
+        // removed
         BufferedReader reader = new BufferedReader(new FileReader("tree_copy"));
         BufferedWriter writer = new BufferedWriter(new FileWriter("tree"));
         while (reader.ready()) {
@@ -37,6 +51,8 @@ public class Tree {
                 writer.newLine();
             }
         }
+
+        // cleans up
         reader.close();
         writer.close();
         Files.delete(Path.of("tree_copy"));
