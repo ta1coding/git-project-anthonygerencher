@@ -1,23 +1,26 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Git {
-    
+
     private static boolean compressData = false;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        
+
     }
 
     /**
@@ -78,9 +81,10 @@ public class Git {
             zipCompressFile(pathToFile);
             String hash = generateHash(zipPath);
             File backup = new File("git/objects/" + hash);
-            if (backup.exists())
+            if (!backup.exists())
                 createBackup(zipPath, hash);
-            updateIndex(pathToFile, hash);
+            if (!indexContainsFile(pathToFile))
+                updateIndex(pathToFile, hash);
             Files.delete(Path.of(zipPath));
         }
 
@@ -92,8 +96,24 @@ public class Git {
             // if the backup already exists, no need to create a new one
             if (!backup.exists())
                 createBackup(pathToFile, hash);
-            updateIndex(pathToFile, hash);
+            if (!indexContainsFile(pathToFile))
+                updateIndex(pathToFile, hash);
         }
+    }
+
+    private static boolean indexContainsFile(String pathToFile) throws IOException {
+        File file = new File(pathToFile);
+        String fileName = file.getName();
+        BufferedReader reader = new BufferedReader(new FileReader("index"));
+        while (reader.ready()) {
+            String line = reader.readLine();
+            if (Objects.equals(line.substring(line.length() - fileName.length()), fileName)) {
+                reader.close();
+                return true;
+            }
+        }
+        reader.close();
+        return false;
     }
 
     /**
@@ -120,12 +140,12 @@ public class Git {
         zipOutputStream.close();
     }
 
-    
     /**
-     * Updates the index, storing the file name and corresponding hash together with proper formatting.
+     * Updates the index, storing the file name and corresponding hash together with
+     * proper formatting.
      * 
      * @param pathToFile - the path to the file
-     * @param hash - the hash of the file
+     * @param hash       - the hash of the file
      * @throws IOException
      */
     private static void updateIndex(String pathToFile, String hash) throws IOException {
