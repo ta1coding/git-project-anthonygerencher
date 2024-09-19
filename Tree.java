@@ -11,9 +11,9 @@ import java.util.Objects;
 
 public class Tree {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-        addFileToTree("test");
-        addFileToTree("test2");
-        addFileToTree("test3");
+        // addFileToTree("test");
+        // addFileToTree("test2");
+        // addFileToTree("test3");
         // removeFileFromTree("test");
         // removeFileFromTree("test3");
     }
@@ -69,15 +69,16 @@ public class Tree {
 
         // retrieves the hash from the index
         File file = new File(pathToFile);
+        String fileName = file.getName();
         String index = getIndex();
-        String hash = getHashFromIndex(file.getName(), index);
+        String hash = getHashFromIndex(fileName, index);
         String tree = getTree();
-        // if the blob is already in the tree, no need to continue
-        if (tree.contains(hash))
+        // if the file is already in the tree, no need to continue
+        if (tree.contains(fileName))
             return;
         // writes the data to the tree file
         BufferedWriter writer = new BufferedWriter(new FileWriter("tree", true));
-        writer.write("blob :  " + hash + " : " + file.getName());
+        writer.write("blob :  " + hash + " : " + fileName);
         writer.newLine();
         writer.close();
     }
