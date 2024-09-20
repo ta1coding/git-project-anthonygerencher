@@ -4,16 +4,17 @@ import java.security.NoSuchAlgorithmException;
 
 public class TreeTester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        cleanWorkspace();
+        removeDirectory("git/objects");
     }
 
+    //not yet working
     public static void cleanWorkspace () {
-        File directory = new File("");
+        File directory = new File("./");
         for (File file : directory.listFiles()) {
             if (file.getName().contains(".txt"))
                 file.delete();
         }
-        removeDirectory("git/objects");
+        // removeDirectory("git/objects");
     }
 
     /**
@@ -23,6 +24,8 @@ public class TreeTester {
      */
     private static void removeDirectory(String directoryName) {
         File directory = new File(directoryName);
+        if (!directory.exists())
+            return;
         for (File file : directory.listFiles()) {
             if (file.isDirectory())
                 removeDirectory(file.getPath());
