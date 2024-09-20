@@ -7,14 +7,18 @@ public class TreeTester {
         removeDirectory("git/objects");
     }
 
-    //not yet working
-    public static void cleanWorkspace () {
+    /**
+     * Deletes all .txt files from the working directory. Removes git/objects
+     * directory and all of its contents
+     */
+    public static void cleanWorkspace() {
         File directory = new File("./");
         for (File file : directory.listFiles()) {
             if (file.getName().contains(".txt"))
                 file.delete();
         }
-        // removeDirectory("git/objects");
+        // removes the objects folder and its contents
+        removeDirectory("git/objects");
     }
 
     /**
