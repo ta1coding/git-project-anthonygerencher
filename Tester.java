@@ -13,11 +13,11 @@ import java.util.zip.ZipInputStream;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        // testInitRepo();
-        // testCreateBlob();
-        // testZipCompression();
-        testCreateBlobWithDirectories();
-        //testCreateBlobWithSubDirectories();
+        testInitRepo();
+        testCreateBlob();
+        testZipCompression();
+        //testCreateBlobWithDirectories();
+        testCreateBlobWithSubDirectories();
     }
 
     /**
