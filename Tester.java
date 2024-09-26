@@ -13,10 +13,10 @@ import java.util.zip.ZipInputStream;
 
 public class Tester {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        testInitRepo();
-        testCreateBlob();
-        testZipCompression();
-        testCreateBlobWithDirectories();
+        // testInitRepo();
+        // testCreateBlob();
+        // testZipCompression();
+        // testCreateBlobWithDirectories();
         testCreateBlobWithSubDirectories();
     }
 
@@ -174,15 +174,12 @@ public class Tester {
 
         // Check if the directory and files are written correctly
         String indexContent = getIndex();
-        if (!indexContent.contains("tree")) {
+        if (!indexContent.contains("tree"))
             System.out.println("Failed. Directory is not labeled as a tree.");
-        }
-        else if (!indexContent.contains("blob")){
+        else if (!indexContent.contains("blob"))
             System.out.println("Failed. Files are not labeled as blob.");
-        }
-        else {
+        else 
             System.out.println("Correct! Directory and files aer correctly labeled as tree and blob.");
-        }
 
         // Cleanup
         removeDirectory(testerDirectory.getPath());

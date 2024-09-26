@@ -187,6 +187,9 @@ public class Git {
      * @throws IOException
      */
     private static void updateIndex(String pathToFile, String hash) throws IOException, NoSuchAlgorithmException {
+        if (indexContainsFile(pathToFile)) {
+            return;
+        }
         File file = new File(pathToFile);
         File index = new File("git/index");
         String path = file.getPath();
