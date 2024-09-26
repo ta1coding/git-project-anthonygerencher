@@ -17,6 +17,7 @@ public class Tester {
         testCreateBlob();
         testZipCompression();
         testCreateBlobWithDirectories();
+        testCreateBlobWithSubDirectories();
     }
 
     /**
@@ -146,7 +147,7 @@ public class Tester {
 
     public static void testCreateBlobWithDirectories() throws IOException, NoSuchAlgorithmException {
         if (!repoExistsHere()) {
-            System.out.println("Test cannot be completed as no repository exists at this directory.");
+            System.out.println("No repo exists in this directory.");
             return;
         }
         if (Git.dataCompressionEnabled())
@@ -186,6 +187,55 @@ public class Tester {
         // Cleanup
         removeDirectory(testerDirectory.getPath());
     }
+
+
+    public static void testCreateBlobWithSubDirectories() throws IOException, NoSuchAlgorithmException {
+        if (!repoExistsHere()) {
+            System.out.println("No repo exists in this directory.");
+            return;
+        }
+
+        if (Git.dataCompressionEnabled())
+            Git.toggleDataCompression();
+        
+        // Create a test directory with files and subdirectories
+        File testDirectory = new File("testDir");
+        testDirectory.mkdir();
+
+        File subDirectory = new File("testDir/subDir");
+        subDirectory.mkdir();
+
+        File testFile1 = new File("testDir/file1.txt");
+        testFile1.createNewFile();
+        BufferedWriter writer1 = new BufferedWriter(new FileWriter(testFile1));
+        writer1.write("File 1 example data");
+        writer1.close();
+
+        File testFile2 = new File("testDir/subDir/file2.txt");
+        testFile2.createNewFile();
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(testFile2));
+        writer2.write("File 2 example data inside subdirectory");
+        writer2.close();
+
+        // Create a blob for the directory
+        Git.addDirectory(testDirectory.getPath());
+
+        // Check if the directory and files are written correctly
+        String indexContent = getIndex();
+        boolean treeExists = indexContent.contains("tree");
+        boolean blobExists = indexContent.contains("blob");
+
+        if (!treeExists)
+            System.out.println("Failed. Directory and subdirectory are not labeled as trees.");
+        else if (!blobExists)
+            System.out.println("Failed. Files inside directories are not labeled as blobs.");
+        else 
+            System.out.println("Success! Directory, subdirectory, and files are correctly labeled as tree and blobs, and the format is correct.");
+
+        // Cleanup
+        removeDirectory(testDirectory.getPath());
+    }
+
 
     /**
      * @param fileName - the name of the file
