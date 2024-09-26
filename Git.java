@@ -115,6 +115,46 @@ public class Git {
         reader.close();
         return false;
     }
+    //Adds a directory given its path. Adds files and subdirectories.
+    public static String addDirectory(String pathToDirectory) throws NoSuchAlgorithmException, IOException {
+        File directory = new File(pathToDirectory);
+        if (!directory.exists() || !directory.isDirectory()) {
+            throw new FileNotFoundException("Directory DNE");
+        }
+
+        // Create a temporary tree file to store contents
+        File tempTreeFile = File.createTempFile("tree", ".tmp");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tempTreeFile));
+        File [] fileArray = directory.listFiles();
+        for (int i = 0; i < fileArray.length; i++) {
+            if (fileArray[i].isFile()) {
+                // Create a blob for the file
+                String blobHash = generateHash(fileArray[i].getPath());
+                createBlob(fileArray[i].getPath());
+                writer.write("blob " + blobHash + " " + fileArray[i].getName());
+                writer.newLine();
+            }
+            else if (fileArray[i].isDirectory()) {
+                String treeHash = addDirectory(fileArray[i].getPath());
+                writer.write("tree " + treeHash + " " + fileArray[i].getName());
+                writer.newLine();
+            }
+        }
+        writer.close();
+
+        //Get hash for the tree file
+        String treeHash = generateHash(tempTreeFile.getPath());
+
+        File treeToObjs = new File("git/objects/" + treeHash);
+        if (!treeToObjs.exists()) {
+            createBackup(tempTreeFile.getPath(), treeHash);
+        }
+        updateIndex(pathToDirectory, treeHash);
+        tempTreeFile.delete();
+        return treeHash;
+    }
+
+
 
     /**
      * Zip compresses a file and stores under the same name it with the .zip suffix.
