@@ -143,6 +143,49 @@ public class Tester {
         System.out.println("createBlob method passed the test.");
     }
 
+    public static void testCreateBlobWithDirectories() throws IOException, NoSuchAlgorithmException {
+        if (!repoExistsHere()) {
+            System.out.println("Test cannot be completed as no repository exists at this directory.");
+            return;
+        }
+        if (Git.dataCompressionEnabled())
+            Git.toggleDataCompression();
+        
+        // Create a test directory with files
+        File testerDirectory = new File("testDir");
+        testerDirectory.mkdir();
+
+        File testTextFile1 = new File("testDir/file1.txt");
+        testTextFile1.createNewFile();
+        BufferedWriter writer1 = new BufferedWriter(new FileWriter(testTextFile1));
+        writer1.write("FILE 1 EXAMPEL");
+        writer1.close();
+
+        File testTextFile2 = new File("testDir/file2.txt");
+        testTextFile2.createNewFile();
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(testTextFile2));
+        writer2.write("SECOND FILe Ex");
+        writer2.close();
+
+        // Created a blob for the directory
+        Git.createBlob(testerDirectory.getPath());
+
+        // Check if the directory and files are written correctly
+        String indexContent = getIndex();
+        if (!indexContent.contains("tree")) {
+            System.out.println("Failed. Directory is not labeled as a tree.");
+        }
+        else if (!indexContent.contains("blob")){
+            System.out.println("Failed. Files are not labeled as blob.");
+        }
+        else {
+            System.out.println("Correct! Directory and files aer correctly labeled as tree and blob.");
+        }
+
+        // Cleanup
+        removeDirectory(testerDirectory.getPath());
+    }
+
     /**
      * @param fileName - the name of the file
      * @param fileData - the data in the file
