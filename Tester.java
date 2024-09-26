@@ -16,8 +16,8 @@ public class Tester {
         // testInitRepo();
         // testCreateBlob();
         // testZipCompression();
-        // testCreateBlobWithDirectories();
-        testCreateBlobWithSubDirectories();
+        testCreateBlobWithDirectories();
+        //testCreateBlobWithSubDirectories();
     }
 
     /**
@@ -170,7 +170,7 @@ public class Tester {
         writer2.close();
 
         // Created a blob for the directory
-        Git.createBlob(testerDirectory.getPath());
+        Git.addDirectory(testerDirectory.getPath());
 
         // Check if the directory and files are written correctly
         String indexContent = getIndex();
