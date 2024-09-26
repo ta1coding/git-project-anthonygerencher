@@ -154,8 +154,6 @@ public class Git {
         return treeHash;
     }
 
-
-
     /**
      * Zip compresses a file and stores under the same name it with the .zip suffix.
      * 

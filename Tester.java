@@ -16,6 +16,7 @@ public class Tester {
         testInitRepo();
         testCreateBlob();
         testZipCompression();
+        testCreateBlobWithDirectories();
     }
 
     /**
