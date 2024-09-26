@@ -148,12 +148,26 @@ public class Git {
      * @param hash       - the hash of the file
      * @throws IOException
      */
-    private static void updateIndex(String pathToFile, String hash) throws IOException {
+    private static void updateIndex(String pathToFile, String hash) throws IOException, NoSuchAlgorithmException {
+        File file = new File(pathToFile);
         File index = new File("git/index");
+        String path = file.getPath();
         BufferedWriter writer = new BufferedWriter(new FileWriter(index, true));
-        writer.write(hash + " " + pathToFile.substring(pathToFile.lastIndexOf("/") + 1));
+        if (file.isDirectory())
+            writer.write("tree " + hash + " " + path);
+        else
+            writer.write("blob " + hash + " " + path);
         writer.newLine();
         writer.close();
+        if (file.isDirectory()) {
+            File[] contents = file.listFiles();
+            if (contents.length > 0) {
+                for (int i = 0; i < contents.length; i++) {
+                    String contentsHash = generateHash(contents[i].getPath());
+                    updateIndex(contents[i].getPath(), contentsHash);
+                }
+            }
+        }
     }
 
     /**
@@ -182,19 +196,32 @@ public class Git {
     private static String generateHash(String pathToFile) throws NoSuchAlgorithmException, IOException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         File file = new File(pathToFile);
-        // this could cause issues if the file is greater than 2 billion bytes/bits idk
-        // which
-        byte[] byteData = new byte[(int) file.length()];
 
-        // Reads the byte data into a byte array
-        FileInputStream inputStream = new FileInputStream(file);
-        inputStream.read(byteData);
-        inputStream.close();
+        if (file.isFile()) {
+            byte[] byteData = new byte[(int) file.length()];
 
-        // Hashes the byte data via the SHA-1 algorithm
-        byte[] hash = md.digest(byteData);
+            // Reads the byte data into a byte array
+            FileInputStream inputStream = new FileInputStream(file);
+            inputStream.read(byteData);
+            inputStream.close();
 
-        return byteArrayToHexString(hash);
+            // Hashes the byte data via the SHA-1 algorithm
+            byte[] hash = md.digest(byteData);
+            return byteArrayToHexString(hash);
+        }
+        else if (file.isDirectory()) {
+            // for directories we need to connect all hashes to represnt all contents of directory
+            StringBuffer connectedHash = new StringBuffer();
+            File[] contents = file.listFiles();
+            if (contents.length > 0) {
+                for (int i = 0; i < contents.length; i++) {
+                    connectedHash.append(generateHash(contents[i].getPath()));
+                }
+            }
+            byte[] hash = md.digest(connectedHash.toString().getBytes());
+            return byteArrayToHexString(hash);
+        }
+        return null;
     }
 
     /**
