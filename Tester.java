@@ -37,7 +37,6 @@ public class Tester {
         // ensures that a repo exists to back up files to
         if (!repoExistsHere()) {
             System.out.println("Test cannot be completed as no repository exists at this directory.");
-            return;
         }
 
         // ensures data compression is enabled
